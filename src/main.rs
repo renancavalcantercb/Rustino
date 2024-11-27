@@ -1,30 +1,29 @@
-use clap::{Parser, Subcommand};
+mod cli;
+mod games;
+mod history;
+mod user;
 
-#[derive(Parser)]
-#[command(author, version, about, long_about = None)]
-struct RustinoCli {
-    #[command(subcommand)]
-    command: Commands,
-}
-
-#[derive(Subcommand)]
-enum Commands {
-    Start {
-        #[arg(short, long, default_value_t = 1000)]
-        balance: u32,
-    },
-    History,
-}
+use clap::Parser;
+use cli::Commands;
+use games::play_game;
+use history::GameHistory;
+use user::User;
 
 fn main() {
-    let cli = RustinoCli::parse();
+    let cli = cli::RustinoCli::parse();
+
+    let mut user = User::new("Player", "player@example.com");
+    let mut history = GameHistory::new();
 
     match cli.command {
-        Commands::Start { balance } => {
-            println!("Welcome to Rustino! Your starting balance is ${}.", balance);
+        Commands::Start => {
+            println!("Welcome to Rustino, {}!", user.name);
+        }
+        Commands::Game { game, bet } => {
+            play_game(&game, bet, &mut user, &mut history);
         }
         Commands::History => {
-            println!("Game history will be displayed here.");
+            history.display();
         }
     }
 }
